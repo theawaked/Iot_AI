@@ -21,49 +21,29 @@ else:
     inputs = Input(shape=(img_dims, img_dims, 3))
 
 
-# First conv block
-x = Conv2D(filters=16, kernel_size=(3, 3), activation='relu')(inputs)
+x = Conv2D(filters=64, kernel_size=(3, 3), activation='relu', padding='same')(inputs)
 x = MaxPool2D(pool_size=(2, 2))(x)
-x = Conv2D(filters=16, kernel_size=(3, 3), activation='relu')(inputs)
+x = Conv2D(filters=16, kernel_size=(3, 3), activation='relu', padding='same')(inputs)
 x = MaxPool2D(pool_size=(2, 2))(x)
-# Second conv block
-#x = SeparableConv2D(filters=32, kernel_size=(3, 3), activation='relu', padding='same')(x)
-
-#x = BatchNormalization()(x)
-#x = MaxPool2D(pool_size=(2, 2))(x)
-
-# Third conv block
-#x = SeparableConv2D(filters=64, kernel_size=(3, 3), activation='relu', padding='same')(x)
-#x = BatchNormalization()(x)
-#x = MaxPool2D(pool_size=(2, 2))(x)
-
-# Fourth conv block
-#x = SeparableConv2D(filters=128, kernel_size=(3, 3), activation='relu', padding='same')(x)
-#x = BatchNormalization()(x)
-#x = MaxPool2D(pool_size=(2, 2))(x)
-#x = Dropout(rate=0.2)(x)
-
-# Fifth conv block
-#x = SeparableConv2D(filters=256, kernel_size=(3, 3), activation='relu', padding='same')(x)
-#x = BatchNormalization()(x)
-#x = MaxPool2D(pool_size=(2, 2))(x)
-#x = Dropout(rate=0.2)(x)
-
-# FC layer
+x = BatchNormalization()(x)
+x = SeparableConv2D(filters=32, kernel_size=(3, 3), activation='relu', padding='same')(x)
+x = BatchNormalization()(x)
+x = MaxPool2D(pool_size=(2, 2))(x)
+x = Dropout(rate=0.2)(x)
+#flattens input
 x = Flatten()(x)
+#densifies the input.
 x = Dense(units=128, activation='relu')(x)
-#x = Dropout(rate=0.7)(x)
-#x = Dense(units=128, activation='relu')(x)
-#x = Dropout(rate=0.5)(x)
-#x = Dense(units=64, activation='relu')(x)
-#x = Dropout(rate=0.3)(x)
+x = Dense(units=64, activation='relu')(x)
+#reduces overfitting
+x = Dropout(rate=0.2)(x)
 
 # Output layer
 output = Dense(units=1, activation='sigmoid')(x)
 
 # Creating model and compiling
 model = Model(inputs=inputs, outputs=output)
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['binary_accuracy','categorical_accuracy', 'accuracy'])
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['binary_accuracy', 'accuracy'])
 
  # Callbacks
 checkpoint = ModelCheckpoint(filepath='first_try.hdf5', save_best_only=True, save_weights_only=False)
@@ -73,7 +53,7 @@ checkpoint = ModelCheckpoint(filepath='first_try.hdf5', save_best_only=True, sav
 
 model.load_weights('first_try.hdf5')
 #image inlezen.
-imagepath = 'C:/Users/gerben/Desktop/school/jaar 3/AI/chest-xray-pneumonia/chest_xray/val/'
+imagepath = 'C:/Users/gerben/Desktop/school/jaar 3/AI/chest-xray-pneumonia/chest_xray/val/both/'
 
 
 
@@ -88,33 +68,9 @@ def test_picture(fileandpicturename):
           probabilities = model.predict(img_tensor)
           print(probabilities)
 
-# test_data_dir = imagepath + 'both'
-# test_datagen = ImageDataGenerator(
-#     rescale=1. / 255)
 
-# test_generator = test_datagen.flow_from_directory(
-#     test_data_dir,
-#     target_size=(img_dims, img_dims),
-#     batch_size= 4,
-# 	shuffle='False',
-#     class_mode='categorical')
-
-
-# test_generator.reset()
-# Y_pred = model.predict_generator(test_generator)
-# classes = test_generator.classes[test_generator.index_array]
-# y_pred = np.argmax(Y_pred, axis=-1)
-# sum(y_pred==classes)/10000
-
-# 0.9922
-
-# from sklearn.metrics import confusion_matrix
-# confusion_matrix(test_generator.classes[test_generator.index_array],y_pred)
-
-for cond in ['/NORMAL/', '/PNEUMONIA/']:
-    print(cond)
-    for img in (os.listdir(imagepath + cond)):
-        print(img)
-        test_picture(cond + img)
+for img in (os.listdir(imagepath)):
+    print(img)
+    test_picture(img)
         
 
